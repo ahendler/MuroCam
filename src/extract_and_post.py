@@ -35,7 +35,7 @@ while True:
     picture_name = cam.take_picture()
     image = cam.get_frame(picture_name)
     now = datetime.datetime.now()
-    if det.detect_split(image):
+    if det.detect_YOLOv5(image):
         print("Hand detected at " + now.strftime("%Y-%m-%d %H:%M:%S"))
         # save the image with a new name
         cv2.imwrite(picture_name, image)

@@ -1,15 +1,10 @@
 import os
 import cv2
 from dotenv import load_dotenv
-from camera.camera import Camera
-from detection.detection import Detection
 from instagram.instagram import Instagram
 import pickle
 
 load_dotenv()
-
-cam = Camera(os.getenv('CAMERA_USERNAME'), os.getenv('CAMERA_PASSWORD'), os.getenv('CAMERA_IP'))
-det = Detection()
 
 # Check if the instagram_instance.pickle file exists
 if os.path.exists('instagram_instance.pickle'):
@@ -24,6 +19,6 @@ else:
     with open('instagram_instance.pickle', 'wb') as f:
         pickle.dump(ins, f)
 
-r = ins.post("hands/1683746618169.jpg")
+r = ins.post("hands/1683845669407.jpg")
 print(r)
 
