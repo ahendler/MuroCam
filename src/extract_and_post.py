@@ -1,4 +1,5 @@
 import os
+import sys
 import cv2
 from dotenv import load_dotenv
 from camera.camera import Camera
@@ -6,38 +7,34 @@ from detection.detection import Detection
 from instagram.instagram import Instagram
 import shutil
 import time
-import datetime
-import pickle
+from loguru import logger
+
+logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
 load_dotenv()
 
 cam = Camera(os.getenv('CAMERA_USERNAME'), os.getenv('CAMERA_PASSWORD'), os.getenv('CAMERA_IP'))
 det = Detection()
-
-# Check if the instagram_instance.pickle file exists
-if os.path.exists('instagram_instance.pickle'):
-    print("Loading Instagram instance from file")
-    with open('instagram_instance.pickle', 'rb') as f:
-        ins = pickle.load(f)
-else:
-    # Create a new instance of the Instagram class
-    print("Creating new Instagram instance")
-    ins = Instagram(os.getenv('INSTAGRAM_APP_ID'), os.getenv('INSTAGRAM_USERNAME'), os.getenv('INSTAGRAM_PASSWORD'))
-    # Save the instance to a file
-    with open('instagram_instance.pickle', 'wb') as f:
-        pickle.dump(ins, f)
+ins = Instagram(os.getenv('INSTAGRAM_APP_ID'), os.getenv('INSTAGRAM_USERNAME'), os.getenv('INSTAGRAM_PASSWORD'))
 
 last_picture = None
 last_posted = int(time.time_ns() / 1000000)
-times_tried = 0
+frames_since_last_detection = 0
+last_detection = int(time.time_ns() / 1000000)
+frames_per_hour = 0
+hour_timer = int(time.time_ns() / 1000000)
 
+logger.info("Starting image capture")
 while True:
     picture_name = cam.take_picture()
     image = cam.get_frame(picture_name)
-    now = datetime.datetime.now()
+    frames_per_hour += 1
     if det.detect_YOLOv5(image):
-        print("Hand detected at " + now.strftime("%Y-%m-%d %H:%M:%S"))
-        # save the image with a new name
+        logger.info(f"{frames_since_last_detection} frames analised and {(int(time.time_ns() / 1000000) - int(last_detection))/60000} minutes elapsed since last detection/program start")
+        logger.info("Person detected")
+        last_detection = int(time.time_ns() / 1000000)
+        frames_since_last_detection = 0
+
         cv2.imwrite(picture_name, image)
         # move the file to a new folder (create if it doesn't exist)
         source_path = os.path.abspath(picture_name)
@@ -45,10 +42,11 @@ while True:
         shutil.move(source_path, os.path.join(destination_folder, picture_name))
         last_picture = os.path.join(destination_folder, picture_name)
     else:
-        times_tried += 1
-        if times_tried > 20:
-            print("No hand detected after 20 tries "+ now.strftime("%Y-%m-%d %H:%M:%S"))
-            times_tried = 0
+        frames_since_last_detection += 1
+        if  (int(time.time_ns() / 1000000) - hour_timer) > 3600000:
+            logger.info(f"{frames_per_hour} frames analised in the last hour")
+            frames_per_hour = 0
+            hour_timer = int(time.time_ns() / 1000000)
         #delete picture
         os.rename(picture_name, "image.jpg")
     
@@ -56,5 +54,5 @@ while True:
         if last_posted == 0 or (int(time.time_ns() / 1000000) - last_posted) > 3600000:
             ins.post(last_picture)
             last_posted = int(time.time_ns() / 1000000)
+            logger.info(f"Image {last_picture} posted")
             last_picture = None
-            print("Posted at " + now.strftime("%Y-%m-%d %H:%M:%S"))
