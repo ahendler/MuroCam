@@ -35,10 +35,9 @@ while True:
         last_detection = int(time.time_ns() / 1000000)
         frames_since_last_detection = 0
 
-        cv2.imwrite(picture_name, image)
         # move the file to a new folder (create if it doesn't exist)
         source_path = os.path.abspath(picture_name)
-        destination_folder = 'hands'
+        destination_folder = os.getenv('DETECTED_IMAGE_PATH')
         shutil.move(source_path, os.path.join(destination_folder, picture_name))
         last_picture = os.path.join(destination_folder, picture_name)
     else:
@@ -48,11 +47,12 @@ while True:
             frames_per_hour = 0
             hour_timer = int(time.time_ns() / 1000000)
         #delete picture
-        os.rename(picture_name, "image.jpg")
+        os.rename(picture_name, "last_frame.jpg")
     
     if last_picture is not None:
         if last_posted == 0 or (int(time.time_ns() / 1000000) - last_posted) > 3600000:
             ins.post(last_picture)
             last_posted = int(time.time_ns() / 1000000)
             logger.info(f"Image {last_picture} posted")
+            shutil.copy(last_picture, os.path.join(os.getenv('POSTED_IMAGE_PATH'), os.path.basename(last_picture)))
             last_picture = None
