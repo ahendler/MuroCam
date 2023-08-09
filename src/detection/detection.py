@@ -8,7 +8,7 @@ class Detection:
         self.hands = self.mp_hands.Hands(min_detection_confidence=0.05)
         self.model = torch.hub.load("ultralytics/yolov5", "yolov5s")  # or yolov5n - yolov5x6, custom
 
-    def detect(self, image):
+    def detect_mediapipe(self, image):
         # Convert the image from BGR to RGB and process it with MediaPipe
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = self.hands.process(image_rgb)
@@ -44,7 +44,7 @@ class Detection:
         region = image[height_start:-1, width//2:-1, :]
         regions.append(region)
         for i in range(n_regions):
-            if self.detect(regions[i]):
+            if self.detect_mediapipe(regions[i]):
                 return True
 
     def detect_HOG(self, image):
@@ -73,11 +73,13 @@ class Detection:
 
         # Results
         #results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
-        r = results.pandas().xyxy[0]
-        if "person" in r["name"].values:
-            if r[r["name"] == "person"]["confidence"].values[0] > 0.65:
-                return True
-            else:
-                return False
-        else:
-            return False
+
+        df = results.pandas().xyxy[0]
+        # Filter rows with name 'person' and confidence > 0.65
+        person_df = df[(df['name'] == 'person') & (df['confidence'] > 0.65)].copy()
+        if not person_df.empty:
+            person_df.loc[:, 'area'] = (person_df['xmax'] - person_df['xmin']) * (person_df['ymax'] - person_df['ymin'])
+            person_df.loc[:, 'score'] = person_df['area'] * person_df['confidence']
+            total_score = person_df['score'].sum()
+            return total_score
+        return 0.0

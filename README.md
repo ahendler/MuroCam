@@ -1,5 +1,5 @@
 # MuroCam
-## Security camera image extraction and hand recognition
+## Security camera image extraction and person recognition
 
 ## TODO
 - Improve frame extraction time
