@@ -1,3 +1,4 @@
+from loguru import logger
 import mediapipe as mp
 import cv2
 import torch
@@ -81,5 +82,5 @@ class Detection:
             person_df.loc[:, 'area'] = (person_df['xmax'] - person_df['xmin']) * (person_df['ymax'] - person_df['ymin'])
             person_df.loc[:, 'score'] = person_df['area'] * person_df['confidence']
             total_score = person_df['score'].sum()
-            return total_score
-        return 0.0
+            return int(total_score/100)
+        return 0

@@ -10,12 +10,19 @@ class Image_mgmt:
         self.hour_timer = int(time.time_ns() / 1000000)
         self.frames_per_hour = 0
 
-    def handle_new_image(self, picture_file, score):
-        if score > 0.5:
-            self.images[picture_file] = score
-            logger.info(f"Image {picture_file} detected with score {score}, highest score is {self.get_high_score()}")
+        # create image folders if they don't exist
+        if not os.path.exists(os.getenv('DETECTED_IMAGE_PATH')):
+            os.makedirs(os.getenv('DETECTED_IMAGE_PATH'))
+            logger.info(f"Created folder {os.getenv('DETECTED_IMAGE_PATH')}")
+        if not os.path.exists(os.getenv('POSTED_IMAGE_PATH')):
+            os.makedirs(os.getenv('POSTED_IMAGE_PATH'))
+            logger.info(f"Created folder {os.getenv('POSTED_IMAGE_PATH')}")
 
-            # move the file to a new folder (create if it doesn't exist)
+    def handle_new_image(self, picture_file, score):
+        if score > 1:
+            if score > self.get_highest_score():
+                logger.info(f"New highest score {score}, image {picture_file}")
+            self.images[picture_file] = score
             source_path = os.path.abspath(picture_file)
             destination_folder = os.getenv('DETECTED_IMAGE_PATH')
             shutil.move(source_path, os.path.join(destination_folder, picture_file))
@@ -32,14 +39,21 @@ class Image_mgmt:
 
         
 
-    def get_high_score(self):
+    def get_highest_score_image(self):
         if len(self.images) > 0:
             return max(self.images, key=self.images.get)
         return None
+    
+    def get_highest_score(self):
+        if len(self.images) > 0:
+            return self.images[self.get_highest_score_image()]
+        return 0
         
     def handle_posted_image(self, picture_file):
         self.images.pop(picture_file, None)
-        shutil.copy(picture_file, os.path.join(os.getenv('POSTED_IMAGE_PATH'), os.path.basename(picture_file)))
+        
+        picture_path = os.path.join(os.getenv('DETECTED_IMAGE_PATH'), picture_file)
+        shutil.copy(picture_path, os.path.join(os.getenv('POSTED_IMAGE_PATH'), os.path.basename(picture_file)))
         self.images = {}
 
 

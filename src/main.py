@@ -26,7 +26,7 @@ while True:
     score = det.detect_YOLOv5(image)
     img_mgmt.handle_new_image(picture_file, score)
     if (int(time.time_ns() / 1000000) - last_posted) > 3600000:
-        best_image = img_mgmt.get_high_score()
+        best_image = img_mgmt.get_highest_score_image()
         if best_image is not None:
             ins.post(best_image)
             img_mgmt.handle_posted_image(best_image)

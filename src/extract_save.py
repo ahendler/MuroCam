@@ -1,27 +1,32 @@
 import os
-import cv2
+import sys
 from dotenv import load_dotenv
 from camera.camera import Camera
 from detection.detection import Detection
-import shutil
+from instagram.instagram import Instagram
+from image_mgmt.image_mgmt import Image_mgmt
+from loguru import logger
+import time
+
+logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
 load_dotenv()
 
 cam = Camera(os.getenv('CAMERA_USERNAME'), os.getenv('CAMERA_PASSWORD'), os.getenv('CAMERA_IP'))
 det = Detection()
+img_mgmt = Image_mgmt()
 
+last_posted = 0 #int(time.time_ns() / 1000000)
+
+logger.info("Starting image capture")
 while True:
-    picture_name = cam.take_picture()
-    image = cam.get_frame(picture_name)
-    if det.detect_split(image):
-        print("Hand detected")
-        # save the image with a new name
-        cv2.imwrite(picture_name, image)
-        # move the file to a new folder (create if it doesn't exist)
-        source_path = os.path.abspath(picture_name)
-        destination_folder = 'hands'
-        shutil.move(source_path, os.path.join(destination_folder, picture_name))
-    else:
-        print("No hand detected")
-        #delete picture
-        os.rename(picture_name, "image.jpg")
+    picture_file = cam.take_picture()
+    image = cam.get_frame(picture_file)
+    score = det.detect_YOLOv5(image)
+    img_mgmt.handle_new_image(picture_file, score)
+    if (int(time.time_ns() / 1000000) - last_posted) > 3600000:
+        best_image = img_mgmt.get_highest_score_image()
+        if best_image is not None:
+            img_mgmt.handle_posted_image(best_image)
+            last_posted = int(time.time_ns() / 1000000)
+            print("posted")
