@@ -18,7 +18,7 @@ class Camera:
         try:
             ffmpeg.run(output)
         except ffmpeg.Error as e:
-            print(e.stderr)
+            pass
         return filename
 
 

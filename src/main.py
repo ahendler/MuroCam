@@ -28,6 +28,7 @@ while True:
     if (int(time.time_ns() / 1000000) - last_posted) > 3600000:
         best_image = img_mgmt.get_highest_score_image()
         if best_image is not None:
-            ins.post(best_image)
-            img_mgmt.handle_posted_image(best_image)
-            last_posted = int(time.time_ns() / 1000000)
+            if int(time.time_ns() / 1000000) - int(best_image.split('.')[0]) > 60000:
+                ins.post(best_image)
+                img_mgmt.handle_posted_image(best_image)
+                last_posted = int(time.time_ns() / 1000000)

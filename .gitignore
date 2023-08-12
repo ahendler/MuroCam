@@ -1,7 +1,7 @@
 .env
 images
-src/last_frame.jpg
 src/instagram_instance.pickle
 yolov5
 *__pycache__*
 *.pickle
+*.jpg
