@@ -26,7 +26,8 @@ class Instagram:
     def post(self, image_path, caption=None):
         if caption is None:
             caption = self.generate_caption()
-        self.cl.photo_upload(image_path, caption)
+        complete_path = os.path.join(os.getenv('DETECTED_IMAGE_PATH'), image_path)
+        self.cl.photo_upload(complete_path, caption)
         logger.info(f"Image {image_path} posted")
 
     def generate_caption(self):
