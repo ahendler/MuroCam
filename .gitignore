@@ -1,4 +1,7 @@
 .env
-src/hands
-src/image.jpg
+images
+src/instagram_instance.pickle
+yolov5
 *__pycache__*
+*.pickle
+*.jpg
