@@ -33,7 +33,6 @@ class Image_mgmt:
         self.frames_per_hour += 1
         if  (int(time.time_ns() / 1000000) - self.hour_timer) > 3600000:
             logger.info(f"{self.frames_per_hour} frames analised in the last hour")
-            logger.info(f" {len(self.images)} images in the queue")
             self.frames_per_hour = 0
             self.hour_timer = int(time.time_ns() / 1000000)
 
