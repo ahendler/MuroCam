@@ -1,6 +1,5 @@
 import os
 import sys
-import cv2
 from dotenv import load_dotenv
 from camera.camera import Camera
 from detection.detection import Detection

@@ -9,6 +9,7 @@ load_dotenv()
 ins = Instagram(os.getenv('INSTAGRAM_APP_ID'), os.getenv('INSTAGRAM_USERNAME'), os.getenv('INSTAGRAM_PASSWORD'))
 
 
-r = ins.post("hands/1683859360368.jpg")
+r = ins.post("1692630652327.jpg")
 print(r)
+
 

@@ -27,8 +27,12 @@ class Instagram:
         if caption is None:
             caption = self.generate_caption()
         complete_path = os.path.join(os.getenv('DETECTED_IMAGE_PATH'), image_path)
-        self.cl.photo_upload(complete_path, caption)
-        logger.info(f"Image {image_path} posted")
+        try:
+            self.cl.photo_upload(complete_path, caption)
+        except Exception as e:
+            logger.error(f"Error posting image {image_path}: {e}")
+        else:
+            logger.info(f"Image {image_path} posted")
 
     def generate_caption(self):
         emoji_face = ["😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😋", "😎", "😍", "😘", "😗", "😙", "😚", "☺️", "🙂", "🤗", "🤔", "🤭", "🤫", "🤥", "😐", "😑", "😶", "😏", "😒", "🙄", "😬", "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤢", "🤮", "🥵", "🥶", "😵", "🤯", "🤠", "🥳", "😎", "🤓", "🧐", "😕", "😟", "🙁", "☹️", "😮", "😯", "😲", "😳", "🥺", "😦", "😧", "😨", "😰", "😥", "😢", "😭", "😱", "😖", "😞", "😓", "😩", "😫", "🥱", "😤", "😡", "😠", "🤬", "🤯", "😷", "🤒", "🤕", "🤢", "🤮", "🥴", "🥺"]
